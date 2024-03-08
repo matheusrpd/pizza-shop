@@ -7,25 +7,32 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 const signInFormSchema = z.object({
-  email: z.string().email(),
+  email: z
+    .string({
+      required_error: 'Informe o seu e-mail',
+    })
+    .email('Informe um e-mail válido'),
 })
 
 type signInFormData = z.infer<typeof signInFormSchema>
 
 export function SignIn() {
-  const {
-    register,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = useForm<signInFormData>({
+  const form = useForm<signInFormData>({
     resolver: zodResolver(signInFormSchema),
   })
 
-  const handleSignIn = handleSubmit(async (data) => {
+  const handleSignIn = form.handleSubmit(async (data) => {
     console.log(data)
 
     await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -53,20 +60,38 @@ export function SignIn() {
           </p>
         </div>
 
-        <form onSubmit={handleSignIn} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Seu e-mail</Label>
-            <Input id="email" type="email" {...register('email')} />
-          </div>
+        <Form {...form}>
+          <form onSubmit={handleSignIn} className="flex flex-col gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="email">Seu e-mail</FormLabel>
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              'Acessar painel'
-            )}
-          </Button>
-        </form>
+                  <FormControl>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="exemplo@gmail.com"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                'Acessar painel'
+              )}
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   )

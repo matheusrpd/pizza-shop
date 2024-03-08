@@ -7,14 +7,21 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 const signUpFormSchema = z.object({
-  restaurantName: z.string(),
-  managerName: z.string(),
-  phone: z.string(),
-  email: z.string().email(),
+  restaurantName: z.string().min(1, 'Informe o nome do restaurante'),
+  managerName: z.string().min(1, 'Informe o seu nome'),
+  phone: z.string().min(1, 'Informe o seu celular'),
+  email: z.string().email('Informe um e-mail válido'),
 })
 
 type signUpFormData = z.infer<typeof signUpFormSchema>
@@ -22,21 +29,22 @@ type signUpFormData = z.infer<typeof signUpFormSchema>
 export function SignUp() {
   const navigate = useNavigate()
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { isSubmitting },
-  } = useForm<signUpFormData>({
+  const form = useForm<signUpFormData>({
     resolver: zodResolver(signUpFormSchema),
+    defaultValues: {
+      restaurantName: '',
+      managerName: '',
+      email: '',
+      phone: '',
+    },
   })
 
-  const handleSignUp = handleSubmit(async (data) => {
+  const handleSignUp = form.handleSubmit(async (data) => {
     console.log(data)
 
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    reset()
+    form.reset()
 
     toast.success('Restaurante cadastrado', {
       description: 'O seu restaurante foi cadastrado com sucesso!',
@@ -65,41 +73,103 @@ export function SignUp() {
           </p>
         </div>
 
-        <form onSubmit={handleSignUp} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="restaurantName">Nome do restaurante</Label>
-            <Input
-              id="restaurantName"
-              type="text"
-              {...register('restaurantName')}
+        <Form {...form}>
+          <form onSubmit={handleSignUp} className="flex flex-col gap-4">
+            <FormField
+              control={form.control}
+              name="restaurantName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="restaurantName">
+                    Nome do restaurante
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      id="restaurantName"
+                      placeholder="Pizza Shop"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="managerName">Seu nome</Label>
-            <Input id="managerName" type="text" {...register('managerName')} />
-          </div>
+            <FormField
+              control={form.control}
+              name="managerName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="managerName">Seu nome</FormLabel>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Seu e-mail</Label>
-            <Input id="email" type="email" {...register('email')} />
-          </div>
+                  <FormControl>
+                    <Input
+                      id="managerName"
+                      placeholder="Matheus Allan"
+                      {...field}
+                    />
+                  </FormControl>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="phone">Seu celular</Label>
-            <Input id="phone" type="tel" {...register('phone')} />
-          </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              'Finalizar cadastro'
-            )}
-          </Button>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="email">Seu e-mail</FormLabel>
 
-          <Terms />
-        </form>
+                  <FormControl>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="exemplo@gmail.com"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="phone">Seu celular</FormLabel>
+
+                  <FormControl>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(00) 00000-0000"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                'Finalizar cadastro'
+              )}
+            </Button>
+
+            <Terms />
+          </form>
+        </Form>
       </div>
     </div>
   )
