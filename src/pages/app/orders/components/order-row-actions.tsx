@@ -1,4 +1,4 @@
-import { CircleEllipsis, Search, X } from 'lucide-react'
+import { Ellipsis, Search, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,7 +16,7 @@ export function OrderRowActions() {
           variant="ghost"
           className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
         >
-          <CircleEllipsis className="h-5 w-5" />
+          <Ellipsis className="h-5 w-5" />
           <span className="sr-only">Abrir menu</span>
         </Button>
       </DropdownMenuTrigger>
