@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
+import { OrderDetails } from './order-details'
 import { OrderRowActions } from './order-row-actions'
 
 export function TableOrders() {
@@ -19,9 +21,9 @@ export function TableOrders() {
         <TableRow>
           <TableHead className="w-16"></TableHead>
           <TableHead className="w-36">Identificador</TableHead>
-          <TableHead className="w-40">Realizado há</TableHead>
-          <TableHead className="w-36">Status</TableHead>
-          <TableHead className="w-36">Total</TableHead>
+          <TableHead className="w-56">Realizado há</TableHead>
+          <TableHead className="w-56">Status</TableHead>
+          <TableHead className="w-56">Total</TableHead>
           <TableHead>Cliente</TableHead>
           <TableHead className="w-16"></TableHead>
         </TableRow>
@@ -31,10 +33,16 @@ export function TableOrders() {
         {Array.from({ length: 10 }).map((_, index) => (
           <TableRow key={index}>
             <TableCell>
-              <Button variant="outline" className="h-8 w-8 p-0">
-                <Search className="h-4 w-4" />
-                <span className="sr-only">Detalhes do pedido</span>
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-8 w-8 p-0">
+                    <Search className="h-4 w-4" />
+                    <span className="sr-only">Detalhes do pedido</span>
+                  </Button>
+                </DialogTrigger>
+
+                <OrderDetails />
+              </Dialog>
             </TableCell>
 
             <TableCell className="font-mono font-medium">
