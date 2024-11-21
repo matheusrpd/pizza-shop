@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -16,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { signIn } from '@/http/auth/sign-in'
 
 const signInFormSchema = z.object({
   email: z
@@ -28,19 +30,43 @@ const signInFormSchema = z.object({
 type signInFormData = z.infer<typeof signInFormSchema>
 
 export function SignIn() {
+  const [searchParams] = useSearchParams()
+
   const form = useForm<signInFormData>({
     resolver: zodResolver(signInFormSchema),
+    defaultValues: {
+      email: searchParams.get('email') ?? '',
+    },
   })
 
-  const handleSignIn = form.handleSubmit(async (data) => {
-    console.log(data)
-
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    toast.success('Enviamos um link de autenticação para seu e-mail', {
-      description: 'Acesse seu e-mail e clique no botão para acessar o painel',
-    })
+  const { mutateAsync: authenticate } = useMutation({
+    mutationFn: signIn,
   })
+
+  async function handleSignIn({ email }: signInFormData) {
+    await authenticate(
+      { email },
+      {
+        onSuccess: () => {
+          toast.success('Enviamos um link de autenticação para seu e-mail', {
+            description:
+              'Acesse seu e-mail e clique no botão para acessar o painel',
+          })
+        },
+        onError: () => {
+          toast.error('Erro ao enviar e-mail', {
+            description:
+              'Não conseguimos enviar um e-mail para você entrar na aplicação',
+            duration: 5000,
+            action: {
+              label: 'Reenviar',
+              onClick: () => handleSignIn({ email }),
+            },
+          })
+        },
+      },
+    )
+  }
 
   return (
     <div className="w-full p-8">
@@ -61,7 +87,10 @@ export function SignIn() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={handleSignIn} className="flex flex-col gap-4">
+          <form
+            onSubmit={form.handleSubmit(handleSignIn)}
+            className="flex flex-col gap-4"
+          >
             <FormField
               control={form.control}
               name="email"

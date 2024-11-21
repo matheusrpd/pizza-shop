@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { useForm } from 'react-hook-form'
@@ -16,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { registerRestaurant } from '@/http/auth/register-restaurant'
 
 const signUpFormSchema = z.object({
   restaurantName: z.string().min(1, 'Informe o nome do restaurante'),
@@ -39,21 +41,43 @@ export function SignUp() {
     },
   })
 
-  const handleSignUp = form.handleSubmit(async (data) => {
-    console.log(data)
-
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    form.reset()
-
-    toast.success('Restaurante cadastrado', {
-      description: 'O seu restaurante foi cadastrado com sucesso!',
-      action: {
-        label: 'Login',
-        onClick: () => navigate('/sign-in'),
-      },
-    })
+  const { mutateAsync: registerRestaurantFn } = useMutation({
+    mutationFn: registerRestaurant,
   })
+
+  async function handleSignUp({
+    restaurantName,
+    managerName,
+    email,
+    phone,
+  }: signUpFormData) {
+    await registerRestaurantFn(
+      {
+        restaurantName,
+        managerName,
+        email,
+        phone,
+      },
+      {
+        onSuccess: () => {
+          form.reset()
+
+          toast.success('Restaurante cadastrado', {
+            description: 'O seu restaurante foi cadastrado com sucesso!',
+            action: {
+              label: 'Login',
+              onClick: () => navigate(`/sign-in?email=${email}`),
+            },
+          })
+        },
+        onError: () => {
+          toast.error('Erro no cadastro', {
+            description: 'Revise os dados e tente novamente',
+          })
+        },
+      },
+    )
+  }
 
   return (
     <div className="w-full p-8">
@@ -74,7 +98,10 @@ export function SignUp() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={handleSignUp} className="flex flex-col gap-4">
+          <form
+            onSubmit={form.handleSubmit(handleSignUp)}
+            className="flex flex-col gap-4"
+          >
             <FormField
               control={form.control}
               name="restaurantName"
